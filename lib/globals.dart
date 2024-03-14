@@ -56,7 +56,7 @@ class Global{
     showDialog(
         context: context,
         builder: (ctx) {
-          Future.delayed(Duration(seconds: 3),(){
+          Future.delayed(Duration(seconds: 2),(){
             Navigator.pop(ctx);
 
           });
