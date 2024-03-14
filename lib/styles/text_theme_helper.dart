@@ -70,6 +70,12 @@ class TextThemeHelper {
     fontWeight: FontWeight.w400,
   );
 
+  static TextStyle black_22_700 = const TextStyle(
+    color: AppColorHelper.black,
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+  );
+
   static TextStyle black_16_700 = const TextStyle(
     color: AppColorHelper.black,
     fontSize: 16,

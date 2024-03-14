@@ -15,7 +15,7 @@ class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    RoutineScreen(),
+    RoutineScreenParent(),
     StreaksScreen(),
   ];
 
@@ -24,7 +24,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xffFCF7FA),
       appBar: AppBar(
+        backgroundColor: Color(0xffFCF7FA),
+
         centerTitle: true,
         title: Text(
           title[_currentIndex],
@@ -35,10 +38,11 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Divider(color: Color(0xffFCF7FA),thickness: 2,),
+          Divider(color: AppColorHelper.appColor,thickness: 1,),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width *0.2),
             child: BottomNavigationBar(
+              backgroundColor: Color(0xffFCF7FA),
               fixedColor: AppColorHelper.appColor,
               selectedLabelStyle: TextThemeHelper.appColor_14_400,
               unselectedLabelStyle:TextThemeHelper.appColor_14_400,
