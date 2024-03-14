@@ -4,8 +4,10 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:urban_culture/styles/app_color_helper.dart';
 import 'package:urban_culture/styles/text_theme_helper.dart';
+import 'dart:convert';
 
 import '../globals.dart';
 
@@ -16,22 +18,60 @@ class RoutineScreenParent extends StatefulWidget {
 
 class _RoutineScreenParentState extends State<RoutineScreenParent> {
   // Map to hold the state of the step data
-Global globalVar = Global();
+  Global globalVar = Global();
+  late Map<String, Map<String, dynamic>> data;
+
+  Future<void> _saveProducts() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('products', jsonEncode(data));
+  }
+
+  Future<void> _loadProducts() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final productsString = prefs.getString('products');
+    if (productsString != null) {
+      setState(() {
+        data = Map<String, Map<String, dynamic>>.from(
+          (jsonDecode(productsString) as Map).map(
+            (key, value) => MapEntry(
+              key.toString(),
+              (value as Map).cast<String, dynamic>(),
+            ),
+          ),
+        );
+      });
+    } else {
+      // If no cached products data, use the initial data from the global file
+      setState(() {
+        data = Map<String, Map<String, dynamic>>.from(products);
+      });
+      _saveProducts(); // Save the initial data to shared preferences
+    }
+  }
+
+  @override
+  initState() {
+    _loadProducts();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffFCF7FA),
-
-      body: RoutineScreen(products: products, updateStepData: updateStepData),
+      body: data != null
+          ? RoutineScreen(products: data, updateStepData: updateStepData)
+          : Center(child: CircularProgressIndicator()),
     );
   }
 
   // Function to update step data
   void updateStepData(String productName, String status, String uploadTime) {
     setState(() {
-      products[productName]!['status'] = status;
-      products[productName]!['uploadTime'] = uploadTime;
+      data[productName]!['status'] = status;
+      data[productName]!['uploadTime'] = uploadTime;
     });
+    _saveProducts();
   }
 }
 
@@ -72,34 +112,35 @@ class _RoutineScreenState extends State<RoutineScreen> {
   }
 
   Future<void> uploadImage(String productName, int index) async {
-
     var pickedImage = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedImage != null) {
       var uploadTime = await _uploadImageToFirebase(productName, pickedImage);
       widget.updateStepData!(productName, 'complete', uploadTime);
-      Global().loader(context, 2);
     }
   }
 
   Future<String> _uploadImageToFirebase(String productName, pickedImage) async {
-    var reference = _storage.ref().child('images/${DateTime.now()}-$productName.png');
+    Global().loader(context, 3);
+    var reference =
+        _storage.ref().child('images/${DateTime.now()}-$productName.png');
     var uploadTask = reference.putFile(File(pickedImage.path));
     var snapshot = await uploadTask;
     var downloadURL = await snapshot.ref.getDownloadURL();
-    print('Image uploaded successfully for $productName. Download URL: $downloadURL');
+    print(
+        'Image uploaded successfully for $productName. Download URL: $downloadURL');
+
     return DateFormat('h:mm a').format(DateTime.now());
   }
 
-  _commonTile(index, title, subtitle, status,uploadTime) {
+  _commonTile(index, title, subtitle, status, uploadTime) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
       child: GestureDetector(
         onTap: () async {
           // Trigger image upload when tile is tapped
-         uploadImage(title,index);
+          uploadImage(title, index);
 
           // Update the UI with the new upload time
-
         },
         child: Row(
           children: [
@@ -114,13 +155,13 @@ class _RoutineScreenState extends State<RoutineScreen> {
               ),
               child: status == 'complete'
                   ? Icon(
-                Icons.done,
-                color: AppColorHelper.black,
-              )
+                      Icons.done,
+                      color: AppColorHelper.black,
+                    )
                   : Icon(
-                Icons.star,
-                color: AppColorHelper.black,
-              ),
+                      Icons.star,
+                      color: AppColorHelper.black,
+                    ),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,16 +181,14 @@ class _RoutineScreenState extends State<RoutineScreen> {
               ],
             ),
             Spacer(),
-
             Image.asset(
               'assets/images/camera_image.png',
               height: 27,
               width: 27,
             ),
             SizedBox(width: 3),
-
             Text(
-              uploadTime??'',
+              uploadTime ?? '',
               style: TextThemeHelper.appColor_14_400,
             ),
           ],
