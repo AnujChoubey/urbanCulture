@@ -19,7 +19,7 @@ class RoutineScreenParent extends StatefulWidget {
 class _RoutineScreenParentState extends State<RoutineScreenParent> {
   // Map to hold the state of the step data
   Global globalVar = Global();
-  late Map<String, Map<String, dynamic>> data;
+  late Map<String, Map<String, dynamic>> data = {};
 
   Future<void> _saveProducts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

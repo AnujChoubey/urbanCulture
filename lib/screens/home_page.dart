@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Divider(color: AppColorHelper.appColor,thickness: 1,),
+          Divider(color: AppColorHelper.boxColor,thickness: 1,),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width *0.2),
             child: BottomNavigationBar(
