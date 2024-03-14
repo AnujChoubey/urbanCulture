@@ -4,6 +4,7 @@ import 'package:urban_culture/styles/app_color_helper.dart';
 import 'package:urban_culture/styles/text_theme_helper.dart';
 
 
+GlobalKey? globalKey;
 
 Map<String, Map<String, dynamic>> products = {
   'Cleanser': {

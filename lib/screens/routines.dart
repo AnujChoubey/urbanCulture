@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,11 +30,15 @@ class _RoutineScreenParentState extends State<RoutineScreenParent> {
   Future<void> _loadProducts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final productsString = prefs.getString('products');
-    if (productsString != null) {
+    final lastUpdateDate = prefs.getString('lastUpdateDate');
+    final currentDate = DateTime.now().toIso8601String().substring(0, 10); // Get current date in yyyy-MM-dd format
+
+    if (productsString != null && lastUpdateDate == currentDate) {
+      // Use cached products data if available and it's the same day as the last update
       setState(() {
         data = Map<String, Map<String, dynamic>>.from(
           (jsonDecode(productsString) as Map).map(
-            (key, value) => MapEntry(
+                (key, value) => MapEntry(
               key.toString(),
               (value as Map).cast<String, dynamic>(),
             ),
@@ -41,11 +46,14 @@ class _RoutineScreenParentState extends State<RoutineScreenParent> {
         );
       });
     } else {
-      // If no cached products data, use the initial data from the global file
+      // If no cached products data or it's a new day, use the initial data from the global file
       setState(() {
         data = Map<String, Map<String, dynamic>>.from(products);
       });
-      _saveProducts(); // Save the initial data to shared preferences
+
+      // Save the initial data to shared preferences with the current date as the last update date
+      _saveProducts();
+      prefs.setString('lastUpdateDate', currentDate);
     }
   }
 
@@ -107,6 +115,11 @@ class _RoutineScreenState extends State<RoutineScreen> {
             return _commonTile(index, title, subtitle, status, uploadTime);
           },
         ),
+
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text('Just tap to upload your image and complete the step!!',style: TextThemeHelper.appColor_14_400.copyWith(fontWeight: FontWeight.w700,fontSize: 18),),
+        )
       ],
     );
   }
@@ -133,15 +146,22 @@ class _RoutineScreenState extends State<RoutineScreen> {
   }
 
   _commonTile(index, title, subtitle, status, uploadTime) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-      child: GestureDetector(
-        onTap: () async {
-          // Trigger image upload when tile is tapped
-          uploadImage(title, index);
+    return GestureDetector(
+      onTap: () async {
+        // Trigger image upload when tile is tapped
 
-          // Update the UI with the new upload time
-        },
+        HapticFeedback.vibrate();
+        status!= 'complete'?uploadImage(title, index): ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AppColorHelper.appColor,
+            content: Text('No Need! Step Already completed'),
+          ),
+        );
+
+        // Update the UI with the new upload time
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
         child: Row(
           children: [
             Container(

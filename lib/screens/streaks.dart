@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -218,21 +219,27 @@ class _StreaksScreenState extends State<StreaksScreen> {
                 SizedBox(
                   height: 16,
                 ),
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 16),
-                  padding: EdgeInsets.all(9.5),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: AppColorHelper.boxColor,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Get Started',
-                        style: TextThemeHelper.black_14_700,
-                      )
-                    ],
+                GestureDetector(
+                  onTap: (){
+                    dynamic navigationBar = globalKey!.currentWidget;
+                    navigationBar.onTap(0);
+                  },
+                  child: Container(
+                    margin: EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.all(9.5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: AppColorHelper.boxColor,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Get Started',
+                          style: TextThemeHelper.black_14_700,
+                        )
+                      ],
+                    ),
                   ),
                 )
               ],
